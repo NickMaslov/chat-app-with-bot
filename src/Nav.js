@@ -1,9 +1,9 @@
 import React from 'react';
 import useCollection from './useCollection'
 import {firebase} from './firebase'
-import { sign } from 'crypto';
+import { Link } from '@reach/router'
 
-function Nav({ user: { uid, photoUrl, displayName } }) {
+function Nav({ user: { uid, photoURL, displayName } }) {
   const channels = useCollection('channels');
   return (
     <div className="Nav">
@@ -11,7 +11,7 @@ function Nav({ user: { uid, photoUrl, displayName } }) {
         <img
           className="UserImage"
           alt="whatever"
-          src={photoUrl}
+          src={photoURL}
         />
         <div>
           <div>{displayName}</div>
@@ -22,7 +22,7 @@ function Nav({ user: { uid, photoUrl, displayName } }) {
       </div>
       <nav className="ChannelNav">
         {channels.map(channel => (
-          <a key={channel.id} href={`/channel/${channel.id}`}># {channel.id}</a>
+          <Link key={channel.id} to={`/channel/${channel.id}`}># {channel.id}</Link>
         ))}
       </nav>
     </div>

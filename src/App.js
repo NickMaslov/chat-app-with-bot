@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Nav from './Nav';
 import Channel from './Channel';
 import { firebase, db } from './firebase';
+import { Router, Redirect } from "@reach/router";
 
 function App() {
   const user = useAuth()
@@ -9,7 +10,10 @@ function App() {
   return user ? (
     <div className="App">
       <Nav user={user} />
-      <Channel />
+      <Router>
+      <Channel path="channel/:channelId" user={user} />
+      <Redirect from="/" to="channel/general"/>
+      </Router>
     </div>
   ) : (
       <Login />
@@ -49,12 +53,11 @@ function useAuth() {
   useEffect(() => {
     return firebase.auth().onAuthStateChanged(firebaseUser => {
       if (firebaseUser) {
-        let { displayName, uid, photoUrl, email } = firebaseUser;
-        photoUrl = photoUrl||"https://placekitten.com/64/64"
+        let { displayName, uid,photoURL, email } = firebaseUser;
         const user = {
           displayName,
           uid,
-          photoUrl,
+          photoURL,
           email
         }
         setUser(user);

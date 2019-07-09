@@ -1,32 +1,47 @@
-import React, {useEffect, useRef} from 'react';
+import React, { useEffect, useRef } from 'react';
 import useCollection from './useCollection';
 import useDocWithCache from './useDocWithCache';
 import formatDate from 'date-fns/format';
 import isSameDay from 'date-fns/is_same_day';
 
-function useChatScrollManager(ref){
-  useEffect(()=>{
-    const node = ref.current
-    node.scrollTop = node.scrollHeight;
+
+
+function ChatScroller(props) {
+  const ref = useRef()
+  const shouldScroll = useRef(true)
+
+  useEffect(() => {
+    if (shouldScroll.current) {
+      const node = ref.current
+      node.scrollTop = node.scrollHeight;
+    }
   });
+
+  const handleScroll = () => {
+    const node = ref.current;
+    const { scrollTop, clientHeight, scrollHeight } = node;
+    const atBottom = scrollHeight === clientHeight + scrollTop
+    shouldScroll.current = atBottom;
+  }
+
+  return <div {...props} ref={ref} onScroll={handleScroll} />
 }
+
+
 function Messages({ channelId }) {
   const messages = useCollection(
     `channels/${channelId}/messages`,
     'createdAt'
   );
 
-  const scrollerRef = useRef()
-  useChatScrollManager(scrollerRef);
 
   return (
-    <div ref={scrollerRef} className="Messages">
-
+    <ChatScroller className="Messages">
       <div className="EndOfMessages">That's every message!</div>
 
       {messages.map((message, index) => {
         const previous = messages[index - 1]
-        const showDay = shouldShowDay(previous,message)
+        const showDay = shouldShowDay(previous, message)
         const showAvatar = shouldShowAvatar(previous, message);
         return showAvatar
           ? (
@@ -42,7 +57,7 @@ function Messages({ channelId }) {
       }
       )}
 
-    </div>
+    </ChatScroller>
   );
 }
 
@@ -83,27 +98,27 @@ function FirstMessageFromUser({ message, showDay }) {
   )
 }
 
-function shouldShowDay(previous, message){
+function shouldShowDay(previous, message) {
   const isFirst = !previous;
   if (isFirst) {
     return true
   }
 
   const isNewDay = !isSameDay(
-    previous.createdAt.seconds*1000, message.createdAt.seconds*1000
+    previous.createdAt.seconds * 1000, message.createdAt.seconds * 1000
   )
   return isNewDay;
 }
 
-function shouldShowAvatar(previous,message){
+function shouldShowAvatar(previous, message) {
   const isFirst = previous && previous.user.id === message.user.id
-if (!isFirst) {
-  return true
-}
+  if (!isFirst) {
+    return true
+  }
 
-const hasBeenAwhile = message.createdAt.seconds - previous.createdAt.seconds > 180;
+  const hasBeenAwhile = message.createdAt.seconds - previous.createdAt.seconds > 180;
 
-return hasBeenAwhile;
+  return hasBeenAwhile;
 }
 
 export default Messages;
